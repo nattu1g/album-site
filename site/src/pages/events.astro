@@ -17,7 +17,7 @@ const events = await getEvents();
 
   <main>
     <div class="header">
-      <a href="https://nattu1g.github.io/album-site/" class="back-button">← トップに戻る</a>
+      <a href={import.meta.env.BASE_URL + '/'} class="back-button">← トップに戻る</a>
       <h1>学校行事</h1>
     </div>
     
@@ -32,6 +32,12 @@ const events = await getEvents();
             <option value={cat}>{cat}</option>
           ))}
         </select>
+        <select id="tag-filter">
+          <option value="">全てのタグ</option>
+          {[...new Set(events.flatMap(e => e.tags).filter(Boolean))].sort().map(tag => (
+            <option value={tag}>{tag}</option>
+          ))}
+        </select>
       </div>
       <div class="count-display">
         表示: <span id="count">{events.length}</span> / {events.length} 件
@@ -41,13 +47,14 @@ const events = await getEvents();
     <div class="event-grid" id="event-grid">
       {events.map(event => (
         <a 
-          href={`https://nattu1g.github.io/album-site/events/${event.id}/`} 
+          href={`${import.meta.env.BASE_URL}/events/${event.id}/`} 
           class="event-card"
           data-title={event.title}
           data-category={event.category}
+          data-tags={JSON.stringify(event.tags)}
         >
           <img 
-            src={`https://nattu1g.github.io/album-site/images/events/${event.photo_filename}`} 
+            src={`${import.meta.env.BASE_URL}/images/events/${event.photo_filename}`} 
             alt={event.title}
             loading="lazy"
           />
@@ -61,22 +68,26 @@ const events = await getEvents();
     <script>
       const searchInput = document.getElementById('search-input') as HTMLInputElement;
       const categoryFilter = document.getElementById('category-filter') as HTMLSelectElement;
+      const tagFilter = document.getElementById('tag-filter') as HTMLSelectElement;
       const countDisplay = document.getElementById('count');
       const cards = document.querySelectorAll('.event-card');
 
       function filterEvents() {
         const searchTerm = searchInput.value.toLowerCase();
         const selectedCategory = categoryFilter.value;
+        const selectedTag = tagFilter.value;
         let visibleCount = 0;
 
         cards.forEach(card => {
           const title = (card as HTMLElement).dataset.title?.toLowerCase() || '';
           const category = (card as HTMLElement).dataset.category || '';
+          const tags = JSON.parse((card as HTMLElement).dataset.tags || '[]');
 
           const matchesSearch = title.includes(searchTerm);
           const matchesCategory = selectedCategory === '' || category === selectedCategory;
+          const matchesTag = selectedTag === '' || tags.includes(selectedTag);
 
-          if (matchesSearch && matchesCategory) {
+          if (matchesSearch && matchesCategory && matchesTag) {
             (card as HTMLElement).style.display = '';
             visibleCount++;
           } else {
@@ -91,6 +102,7 @@ const events = await getEvents();
 
       searchInput?.addEventListener('input', filterEvents);
       categoryFilter?.addEventListener('change', filterEvents);
+      tagFilter?.addEventListener('change', filterEvents);
     </script>
   </main>
 </body>
@@ -210,6 +222,69 @@ const events = await getEvents();
     padding: 0.25rem 0.75rem;
     border-radius: 12px;
     font-size: 0.75rem;
+  }
+
+  .controls {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 16px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .search-box {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .search-box input {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 2px solid #eee;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+  }
+
+  .search-box input:focus {
+    outline: none;
+    border-color: #667eea;
+  }
+
+  .filter-box {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .filter-box select {
+    padding: 0.8rem 2rem 0.8rem 1rem;
+    border: 2px solid #eee;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    background-color: white;
+    cursor: pointer;
+  }
+
+  .count-display {
+    color: #666;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  @media (max-width: 768px) {
+    .controls {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    
+    .filter-box {
+      flex-direction: column;
+    }
   }
 
   @media (max-width: 768px) {

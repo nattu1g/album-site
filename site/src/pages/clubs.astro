@@ -17,13 +17,21 @@ const clubs = await getClubs();
 
   <main>
     <div class="header">
-      <a href="https://nattu1g.github.io/album-site/" class="back-button">← トップに戻る</a>
+      <a href={import.meta.env.BASE_URL + '/'} class="back-button">← トップに戻る</a>
       <h1>部活動</h1>
     </div>
     
     <div class="controls">
       <div class="search-box">
         <input type="text" id="search-input" placeholder="部活動名で検索..." />
+      </div>
+      <div class="filter-box">
+        <select id="tag-filter">
+          <option value="">全てのタグ</option>
+          {[...new Set(clubs.flatMap(c => c.tags).filter(Boolean))].sort().map(tag => (
+            <option value={tag}>{tag}</option>
+          ))}
+        </select>
       </div>
       <div class="count-display">
         表示: <span id="count">{clubs.length}</span> / {clubs.length} 件
@@ -33,12 +41,13 @@ const clubs = await getClubs();
     <div class="club-grid" id="club-grid">
       {clubs.map(club => (
         <a 
-          href={`https://nattu1g.github.io/album-site/clubs/${club.id}/`} 
+          href={`${import.meta.env.BASE_URL}/clubs/${club.id}/`} 
           class="club-card"
           data-name={club.club_name}
+          data-tags={JSON.stringify(club.tags)}
         >
           <img 
-            src={`https://nattu1g.github.io/album-site/images/clubs/${club.photo_filename}`} 
+            src={`${import.meta.env.BASE_URL}/images/clubs/${club.photo_filename}`} 
             alt={club.club_name}
             loading="lazy"
           />
@@ -57,17 +66,23 @@ const clubs = await getClubs();
 
     <script>
       const searchInput = document.getElementById('search-input') as HTMLInputElement;
+      const tagFilter = document.getElementById('tag-filter') as HTMLSelectElement;
       const countDisplay = document.getElementById('count');
       const cards = document.querySelectorAll('.club-card');
 
       function filterClubs() {
         const searchTerm = searchInput.value.toLowerCase();
+        const selectedTag = tagFilter.value;
         let visibleCount = 0;
 
         cards.forEach(card => {
           const name = (card as HTMLElement).dataset.name?.toLowerCase() || '';
+          const tags = JSON.parse((card as HTMLElement).dataset.tags || '[]');
 
-          if (name.includes(searchTerm)) {
+          const matchesSearch = name.includes(searchTerm);
+          const matchesTag = selectedTag === '' || tags.includes(selectedTag);
+
+          if (matchesSearch && matchesTag) {
             (card as HTMLElement).style.display = '';
             visibleCount++;
           } else {
@@ -81,6 +96,7 @@ const clubs = await getClubs();
       }
 
       searchInput?.addEventListener('input', filterClubs);
+      tagFilter?.addEventListener('change', filterClubs);
     </script>
   </main>
 </body>

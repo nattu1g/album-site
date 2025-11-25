@@ -26,13 +26,13 @@ const { club } = Astro.props;
 
   <main>
     <div class="header">
-      <a href="https://nattu1g.github.io/album-site/clubs/" class="back-button">← 部活動一覧に戻る</a>
+      <a href={`${import.meta.env.BASE_URL}/clubs/`} class="back-button">← 部活動一覧に戻る</a>
     </div>
 
     <div class="detail-container">
       <div class="image-section">
         <img 
-          src={`https://nattu1g.github.io/album-site/images/clubs/${club.photo_filename}`} 
+          src={`${import.meta.env.BASE_URL}/images/clubs/${club.photo_filename}`} 
           alt={club.club_name}
           class="main-image"
           id="main-image"

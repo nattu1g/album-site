@@ -17,7 +17,7 @@ const teachers = await getTeachers();
 
   <main>
     <div class="header">
-      <a href="https://nattu1g.github.io/album-site/" class="back-button">← トップに戻る</a>
+      <a href={import.meta.env.BASE_URL + '/'} class="back-button">← トップに戻る</a>
       <h1>先生</h1>
     </div>
     
@@ -32,6 +32,12 @@ const teachers = await getTeachers();
             <option value={sub}>{sub}</option>
           ))}
         </select>
+        <select id="tag-filter">
+          <option value="">全てのタグ</option>
+          {[...new Set(teachers.flatMap(t => t.tags).filter(Boolean))].sort().map(tag => (
+            <option value={tag}>{tag}</option>
+          ))}
+        </select>
       </div>
       <div class="count-display">
         表示: <span id="count">{teachers.length}</span> / {teachers.length} 名
@@ -41,13 +47,14 @@ const teachers = await getTeachers();
     <div class="teacher-grid" id="teacher-grid">
       {teachers.map(teacher => (
         <a 
-          href={`https://nattu1g.github.io/album-site/teachers/${teacher.id}/`} 
+          href={`${import.meta.env.BASE_URL}/teachers/${teacher.id}/`} 
           class="teacher-card"
           data-name={teacher.name}
           data-subject={teacher.subject}
+          data-tags={JSON.stringify(teacher.tags)}
         >
           <img 
-            src={`https://nattu1g.github.io/album-site/images/teachers/${teacher.photo_filename}`} 
+            src={`${import.meta.env.BASE_URL}/images/teachers/${teacher.photo_filename}`} 
             alt={teacher.name}
             loading="lazy"
           />
@@ -67,22 +74,26 @@ const teachers = await getTeachers();
     <script>
       const searchInput = document.getElementById('search-input') as HTMLInputElement;
       const subjectFilter = document.getElementById('subject-filter') as HTMLSelectElement;
+      const tagFilter = document.getElementById('tag-filter') as HTMLSelectElement;
       const countDisplay = document.getElementById('count');
       const cards = document.querySelectorAll('.teacher-card');
 
       function filterTeachers() {
         const searchTerm = searchInput.value.toLowerCase();
         const selectedSubject = subjectFilter.value;
+        const selectedTag = tagFilter.value;
         let visibleCount = 0;
 
         cards.forEach(card => {
           const name = (card as HTMLElement).dataset.name?.toLowerCase() || '';
           const subject = (card as HTMLElement).dataset.subject || '';
+          const tags = JSON.parse((card as HTMLElement).dataset.tags || '[]');
 
           const matchesSearch = name.includes(searchTerm);
           const matchesSubject = selectedSubject === '' || subject === selectedSubject;
+          const matchesTag = selectedTag === '' || tags.includes(selectedTag);
 
-          if (matchesSearch && matchesSubject) {
+          if (matchesSearch && matchesSubject && matchesTag) {
             (card as HTMLElement).style.display = '';
             visibleCount++;
           } else {
@@ -97,6 +108,7 @@ const teachers = await getTeachers();
 
       searchInput?.addEventListener('input', filterTeachers);
       subjectFilter?.addEventListener('change', filterTeachers);
+      tagFilter?.addEventListener('change', filterTeachers);
     </script>
   </main>
 </body>
@@ -236,6 +248,12 @@ const teachers = await getTeachers();
     .controls {
       flex-direction: column;
       align-items: stretch;
+    }
+    
+    .filter-box {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
     }
   }
 

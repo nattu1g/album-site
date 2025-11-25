@@ -14,6 +14,7 @@ const SHEET_GIDS = {
 export interface Student {
     id: string;
     name: string;
+    yomigana: string;  // 読み仮名（ひらがな）
     class: string;
     photo_filename: string;
     tags: string[];
@@ -47,6 +48,33 @@ export interface Teacher {
     photo_filename: string;
     tags: string[];
     comment: string;
+}
+
+/**
+ * ひらがなをカタカナに変換
+ */
+function hiraganaToKatakana(str: string): string {
+    return str.replace(/[\u3041-\u3096]/g, (match) => {
+        const chr = match.charCodeAt(0) + 0x60;
+        return String.fromCharCode(chr);
+    });
+}
+
+/**
+ * カタカナをひらがなに変換
+ */
+function katakanaToHiragana(str: string): string {
+    return str.replace(/[\u30a1-\u30f6]/g, (match) => {
+        const chr = match.charCodeAt(0) - 0x60;
+        return String.fromCharCode(chr);
+    });
+}
+
+/**
+ * 検索用に文字列を正規化（ひらがなに統一）
+ */
+export function normalizeForSearch(str: string): string {
+    return katakanaToHiragana(str.toLowerCase());
 }
 
 /**
@@ -99,11 +127,12 @@ export async function getStudents(): Promise<Student[]> {
     return data.slice(1).map(row => ({
         id: row[0]?.trim() || '',
         name: row[1]?.trim() || '',
-        class: row[2]?.trim() || '',
-        photo_filename: row[3]?.trim() || '',
-        tags: parseTags(row[4] || ''),
-        comment: row[5]?.trim() || '',
-        date: row[6]?.trim() || '',
+        yomigana: row[2]?.trim() || '',  // 読み仮名を追加
+        class: row[3]?.trim() || '',
+        photo_filename: row[4]?.trim() || '',
+        tags: parseTags(row[5] || ''),
+        comment: row[6]?.trim() || '',
+        date: row[7]?.trim() || '',
     })).filter(student => student.id && student.name);
 }
 

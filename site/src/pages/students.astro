@@ -1,5 +1,5 @@
 ---
-import { getStudents } from '../lib/sheets';
+import { getStudents, normalizeForSearch } from '../lib/sheets';
 import Auth from '../components/Auth.astro';
 
 const students = await getStudents();
@@ -18,7 +18,7 @@ const students = await getStudents();
 
   <main>
     <div class="header">
-      <a href="https://nattu1g.github.io/album-site/" class="back-button">← トップに戻る</a>
+      <a href={import.meta.env.BASE_URL + '/'} class="back-button">← トップに戻る</a>
       <h1>生徒一覧</h1>
     </div>
     
@@ -48,14 +48,15 @@ const students = await getStudents();
     <div class="student-grid" id="student-grid">
       {students.map(student => (
         <a 
-          href={`https://nattu1g.github.io/album-site/students/${student.id}/`} 
+          href={`${import.meta.env.BASE_URL}/students/${student.id}/`} 
           class="student-card"
           data-name={student.name}
+          data-yomigana={student.yomigana}
           data-class={student.class}
           data-tags={JSON.stringify(student.tags)}
         >
           <img 
-            src={`https://nattu1g.github.io/album-site/images/students/${student.photo_filename}`} 
+            src={`${import.meta.env.BASE_URL}/images/students/${student.photo_filename}`} 
             alt={student.name}
             loading="lazy"
           />
@@ -73,6 +74,19 @@ const students = await getStudents();
     </div>
 
     <script>
+      // カタカナをひらがなに変換
+      function katakanaToHiragana(str: string): string {
+        return str.replace(/[\u30a1-\u30f6]/g, (match) => {
+          const chr = match.charCodeAt(0) - 0x60;
+          return String.fromCharCode(chr);
+        });
+      }
+
+      // 検索用に正規化（ひらがなに統一）
+      function normalizeForSearch(str: string): string {
+        return katakanaToHiragana(str.toLowerCase());
+      }
+
       const searchInput = document.getElementById('search-input') as HTMLInputElement;
       const classFilter = document.getElementById('class-filter') as HTMLSelectElement;
       const tagFilter = document.getElementById('tag-filter') as HTMLSelectElement;
@@ -81,17 +95,19 @@ const students = await getStudents();
       const cards = document.querySelectorAll('.student-card');
 
       function filterStudents() {
-        const searchTerm = searchInput.value.toLowerCase();
+        const searchTerm = normalizeForSearch(searchInput.value);
         const selectedClass = classFilter.value;
         const selectedTag = tagFilter.value;
         let visibleCount = 0;
 
         cards.forEach(card => {
-          const name = (card as HTMLElement).dataset.name?.toLowerCase() || '';
+          const name = normalizeForSearch((card as HTMLElement).dataset.name || '');
+          const yomigana = normalizeForSearch((card as HTMLElement).dataset.yomigana || '');
           const className = (card as HTMLElement).dataset.class || '';
           const tags = JSON.parse((card as HTMLElement).dataset.tags || '[]');
 
-          const matchesSearch = name.includes(searchTerm);
+          // 名前または読み仮名で検索（ひらがな・カタカナ両対応）
+          const matchesSearch = name.includes(searchTerm) || yomigana.includes(searchTerm);
           const matchesClass = selectedClass === '' || className === selectedClass;
           const matchesTag = selectedTag === '' || tags.includes(selectedTag);
 
