@@ -31,6 +31,9 @@ const teachers = await getTeachers();
           <option value="name">名前順</option>
           <option value="subject">担当教科順</option>
         </select>
+        <button id="sort-order-toggle" class="sort-order-button" title="昇順・降順を切り替え">
+          <span class="icon">↑</span>
+        </button>
         <select id="subject-filter">
           <option value="">全ての教科</option>
           {[...new Set(teachers.map(t => t.subject).filter(Boolean))].sort().map(sub => (
@@ -79,11 +82,26 @@ const teachers = await getTeachers();
     <script>
       const searchInput = document.getElementById('search-input') as HTMLInputElement;
       const sortSelect = document.getElementById('sort-select') as HTMLSelectElement;
+      const sortOrderToggle = document.getElementById('sort-order-toggle');
       const subjectFilter = document.getElementById('subject-filter') as HTMLSelectElement;
       const tagFilter = document.getElementById('tag-filter') as HTMLSelectElement;
       const teacherGrid = document.getElementById('teacher-grid');
       const countDisplay = document.getElementById('count');
       const cards = Array.from(document.querySelectorAll('.teacher-card'));
+
+      let isAscending = true;
+
+      function toggleSortOrder() {
+        isAscending = !isAscending;
+        if (sortOrderToggle) {
+          const icon = sortOrderToggle.querySelector('.icon');
+          if (icon) {
+            icon.textContent = isAscending ? '↑' : '↓';
+          }
+          sortOrderToggle.classList.toggle('desc', !isAscending);
+        }
+        sortAndFilterTeachers();
+      }
 
       function sortAndFilterTeachers() {
         const searchTerm = searchInput.value.toLowerCase();
@@ -95,15 +113,20 @@ const teachers = await getTeachers();
         const sortedCards = [...cards].sort((a, b) => {
           const aElement = a as HTMLElement;
           const bElement = b as HTMLElement;
+          let comparison = 0;
 
           if (sortBy === 'name') {
             const aName = aElement.dataset.name || '';
             const bName = bElement.dataset.name || '';
-            return aName.localeCompare(bName, 'ja');
+            comparison = aName.localeCompare(bName, 'ja');
           } else if (sortBy === 'subject') {
             const aSubject = aElement.dataset.subject || '';
             const bSubject = bElement.dataset.subject || '';
-            return aSubject.localeCompare(bSubject, 'ja');
+            comparison = aSubject.localeCompare(bSubject, 'ja');
+          }
+          
+          if (sortBy !== 'default') {
+            return isAscending ? comparison : -comparison;
           }
           return 0;
         });
@@ -139,6 +162,7 @@ const teachers = await getTeachers();
 
       searchInput?.addEventListener('input', sortAndFilterTeachers);
       sortSelect?.addEventListener('change', sortAndFilterTeachers);
+      sortOrderToggle?.addEventListener('click', toggleSortOrder);
       subjectFilter?.addEventListener('change', sortAndFilterTeachers);
       tagFilter?.addEventListener('change', sortAndFilterTeachers);
     </script>
@@ -268,6 +292,38 @@ const teachers = await getTeachers();
     font-size: 0.9rem;
     background-color: white;
     cursor: pointer;
+  }
+
+  .sort-order-button {
+    background: white;
+    border: 2px solid #eee;
+    border-radius: 8px;
+    width: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1.2rem;
+    color: #667eea;
+    flex-shrink: 0;
+  }
+
+  .sort-order-button:hover {
+    background: #f8f9fa;
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .sort-order-button.desc .icon {
+    transform: rotate(180deg);
+  }
+  
+  .icon {
+    display: inline-block;
+    transition: transform 0.3s ease;
+    line-height: 1;
   }
 
   .count-display {

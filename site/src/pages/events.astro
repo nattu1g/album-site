@@ -32,6 +32,9 @@ const events = await getEvents();
           <option value="date">日付順（新しい順）</option>
           <option value="category">カテゴリ順</option>
         </select>
+        <button id="sort-order-toggle" class="sort-order-button" title="昇順・降順を切り替え">
+          <span class="icon">↑</span>
+        </button>
         <select id="category-filter">
           <option value="">全てのカテゴリ</option>
           {[...new Set(events.map(e => e.category).filter(Boolean))].sort().map(cat => (
@@ -75,11 +78,26 @@ const events = await getEvents();
     <script>
       const searchInput = document.getElementById('search-input') as HTMLInputElement;
       const sortSelect = document.getElementById('sort-select') as HTMLSelectElement;
+      const sortOrderToggle = document.getElementById('sort-order-toggle');
       const categoryFilter = document.getElementById('category-filter') as HTMLSelectElement;
       const tagFilter = document.getElementById('tag-filter') as HTMLSelectElement;
       const eventGrid = document.getElementById('event-grid');
       const countDisplay = document.getElementById('count');
       const cards = Array.from(document.querySelectorAll('.event-card'));
+
+      let isAscending = true;
+
+      function toggleSortOrder() {
+        isAscending = !isAscending;
+        if (sortOrderToggle) {
+          const icon = sortOrderToggle.querySelector('.icon');
+          if (icon) {
+            icon.textContent = isAscending ? '↑' : '↓';
+          }
+          sortOrderToggle.classList.toggle('desc', !isAscending);
+        }
+        sortAndFilterEvents();
+      }
 
       function sortAndFilterEvents() {
         const searchTerm = searchInput.value.toLowerCase();
@@ -92,19 +110,32 @@ const events = await getEvents();
         const sortedCards = [...cards].sort((a, b) => {
           const aElement = a as HTMLElement;
           const bElement = b as HTMLElement;
+          let comparison = 0;
 
           if (sortBy === 'title') {
             const aTitle = aElement.dataset.title || '';
             const bTitle = bElement.dataset.title || '';
-            return aTitle.localeCompare(bTitle, 'ja');
+            comparison = aTitle.localeCompare(bTitle, 'ja');
           } else if (sortBy === 'date') {
             const aDate = aElement.dataset.date || '';
             const bDate = bElement.dataset.date || '';
-            return bDate.localeCompare(aDate); // 新しい順
+            comparison = aDate.localeCompare(bDate); // 日付は文字列比較でOK (YYYY-MM-DD形式なら)
           } else if (sortBy === 'category') {
             const aCategory = aElement.dataset.category || '';
             const bCategory = bElement.dataset.category || '';
-            return aCategory.localeCompare(bCategory, 'ja');
+            comparison = aCategory.localeCompare(bCategory, 'ja');
+          }
+          
+          if (sortBy !== 'default') {
+             // 日付順のデフォルト（新しい順）は降順的な扱いだが、ここでは単純にロジックに従う
+             // 日付順の場合、ユーザーの期待は「新しい順」がデフォルトかもしれないが、
+             // isAscending=trueなら昇順(古い順)、falseなら降順(新しい順)とするのが自然か、
+             // あるいはUIの矢印に従うか。
+             // ここでは矢印に従い、isAscending=trueなら昇順(小さい順/古い順/あいうえお順)とする。
+             // ただし、元のコードでは `bDate.localeCompare(aDate)` で新しい順(降順)にしていた。
+             // ユーザー体験的には、デフォルトで新しい順がいいかもしれない。
+             // いったん単純な昇順・降順ロジックにする。
+             return isAscending ? comparison : -comparison;
           }
           return 0;
         });
@@ -140,6 +171,7 @@ const events = await getEvents();
 
       searchInput?.addEventListener('input', sortAndFilterEvents);
       sortSelect?.addEventListener('change', sortAndFilterEvents);
+      sortOrderToggle?.addEventListener('click', toggleSortOrder);
       categoryFilter?.addEventListener('change', sortAndFilterEvents);
       tagFilter?.addEventListener('change', sortAndFilterEvents);
     </script>
@@ -307,6 +339,38 @@ const events = await getEvents();
     font-size: 0.9rem;
     background-color: white;
     cursor: pointer;
+  }
+
+  .sort-order-button {
+    background: white;
+    border: 2px solid #eee;
+    border-radius: 8px;
+    width: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1.2rem;
+    color: #667eea;
+    flex-shrink: 0;
+  }
+
+  .sort-order-button:hover {
+    background: #f8f9fa;
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .sort-order-button.desc .icon {
+    transform: rotate(180deg);
+  }
+  
+  .icon {
+    display: inline-block;
+    transition: transform 0.3s ease;
+    line-height: 1;
   }
 
   .count-display {

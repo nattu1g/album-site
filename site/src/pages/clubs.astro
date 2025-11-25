@@ -30,6 +30,9 @@ const clubs = await getClubs();
           <option value="default">デフォルト順</option>
           <option value="name">部活動名順</option>
         </select>
+        <button id="sort-order-toggle" class="sort-order-button" title="昇順・降順を切り替え">
+          <span class="icon">↑</span>
+        </button>
         <select id="tag-filter">
           <option value="">全てのタグ</option>
           {[...new Set(clubs.flatMap(c => c.tags).filter(Boolean))].sort().map(tag => (
@@ -71,10 +74,25 @@ const clubs = await getClubs();
     <script>
       const searchInput = document.getElementById('search-input') as HTMLInputElement;
       const sortSelect = document.getElementById('sort-select') as HTMLSelectElement;
+      const sortOrderToggle = document.getElementById('sort-order-toggle');
       const tagFilter = document.getElementById('tag-filter') as HTMLSelectElement;
       const clubGrid = document.getElementById('club-grid');
       const countDisplay = document.getElementById('count');
       const cards = Array.from(document.querySelectorAll('.club-card'));
+
+      let isAscending = true;
+
+      function toggleSortOrder() {
+        isAscending = !isAscending;
+        if (sortOrderToggle) {
+          const icon = sortOrderToggle.querySelector('.icon');
+          if (icon) {
+            icon.textContent = isAscending ? '↑' : '↓';
+          }
+          sortOrderToggle.classList.toggle('desc', !isAscending);
+        }
+        sortAndFilterClubs();
+      }
 
       function sortAndFilterClubs() {
         const searchTerm = searchInput.value.toLowerCase();
@@ -85,11 +103,16 @@ const clubs = await getClubs();
         const sortedCards = [...cards].sort((a, b) => {
           const aElement = a as HTMLElement;
           const bElement = b as HTMLElement;
+          let comparison = 0;
 
           if (sortBy === 'name') {
             const aName = aElement.dataset.name || '';
             const bName = bElement.dataset.name || '';
-            return aName.localeCompare(bName, 'ja');
+            comparison = aName.localeCompare(bName, 'ja');
+          }
+          
+          if (sortBy !== 'default') {
+            return isAscending ? comparison : -comparison;
           }
           return 0;
         });
@@ -123,6 +146,7 @@ const clubs = await getClubs();
 
       searchInput?.addEventListener('input', sortAndFilterClubs);
       sortSelect?.addEventListener('change', sortAndFilterClubs);
+      sortOrderToggle?.addEventListener('click', toggleSortOrder);
       tagFilter?.addEventListener('change', sortAndFilterClubs);
     </script>
   </main>
@@ -199,6 +223,39 @@ const clubs = await getClubs();
 
   .club-info {
     padding: 1.5rem;
+  }
+
+  .sort-order-button {
+    background: white;
+    border: 2px solid #eee;
+    border-radius: 8px;
+    width: 46px;
+    height: 46px; /* Added height to match other controls */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1.2rem;
+    color: #667eea;
+    flex-shrink: 0;
+  }
+
+  .sort-order-button:hover {
+    background: #f8f9fa;
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .sort-order-button.desc .icon {
+    transform: rotate(180deg);
+  }
+  
+  .icon {
+    display: inline-block;
+    transition: transform 0.3s ease;
+    line-height: 1;
   }
 
   .controls {

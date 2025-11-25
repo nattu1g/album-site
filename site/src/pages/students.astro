@@ -32,6 +32,9 @@ const students = await getStudents();
           <option value="name">名前順</option>
           <option value="class">クラス順</option>
         </select>
+        <button id="sort-order-toggle" class="sort-order-button" title="昇順・降順を切り替え">
+          <span class="icon">↑</span>
+        </button>
         <select id="class-filter">
           <option value="">全てのクラス</option>
           {[...new Set(students.map(s => s.class).filter(Boolean))].sort().map(cls => (
@@ -94,11 +97,26 @@ const students = await getStudents();
 
       const searchInput = document.getElementById('search-input') as HTMLInputElement;
       const sortSelect = document.getElementById('sort-select') as HTMLSelectElement;
+      const sortOrderToggle = document.getElementById('sort-order-toggle');
       const classFilter = document.getElementById('class-filter') as HTMLSelectElement;
       const tagFilter = document.getElementById('tag-filter') as HTMLSelectElement;
       const studentGrid = document.getElementById('student-grid');
       const countDisplay = document.getElementById('count');
       const cards = Array.from(document.querySelectorAll('.student-card'));
+
+      let isAscending = true;
+
+      function toggleSortOrder() {
+        isAscending = !isAscending;
+        if (sortOrderToggle) {
+          const icon = sortOrderToggle.querySelector('.icon');
+          if (icon) {
+            icon.textContent = isAscending ? '↑' : '↓';
+          }
+          sortOrderToggle.classList.toggle('desc', !isAscending);
+        }
+        sortAndFilterStudents();
+      }
 
       function sortAndFilterStudents() {
         const searchTerm = normalizeForSearch(searchInput.value);
@@ -111,19 +129,24 @@ const students = await getStudents();
         const sortedCards = [...cards].sort((a, b) => {
           const aElement = a as HTMLElement;
           const bElement = b as HTMLElement;
+          let comparison = 0;
 
           if (sortBy === 'name') {
             // 読み仮名でソート
             const aYomigana = aElement.dataset.yomigana || '';
             const bYomigana = bElement.dataset.yomigana || '';
-            return aYomigana.localeCompare(bYomigana, 'ja');
+            comparison = aYomigana.localeCompare(bYomigana, 'ja');
           } else if (sortBy === 'class') {
             // クラスでソート
             const aClass = aElement.dataset.class || '';
             const bClass = bElement.dataset.class || '';
-            return aClass.localeCompare(bClass, 'ja');
+            comparison = aClass.localeCompare(bClass, 'ja');
           }
-          // デフォルト順（元の順序を維持）
+          
+          // デフォルト順以外の場合は昇順・降順を適用
+          if (sortBy !== 'default') {
+            return isAscending ? comparison : -comparison;
+          }
           return 0;
         });
 
@@ -162,6 +185,7 @@ const students = await getStudents();
 
       searchInput?.addEventListener('input', sortAndFilterStudents);
       sortSelect?.addEventListener('change', sortAndFilterStudents);
+      sortOrderToggle?.addEventListener('click', toggleSortOrder);
       classFilter?.addEventListener('change', sortAndFilterStudents);
       tagFilter?.addEventListener('change', sortAndFilterStudents);
     </script>
@@ -337,6 +361,38 @@ const students = await getStudents();
     font-size: 0.9rem;
     background-color: white;
     cursor: pointer;
+  }
+
+  .sort-order-button {
+    background: white;
+    border: 2px solid #eee;
+    border-radius: 8px;
+    width: 46px; /* selectの高さに合わせる */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1.2rem;
+    color: #667eea;
+    flex-shrink: 0;
+  }
+
+  .sort-order-button:hover {
+    background: #f8f9fa;
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .sort-order-button.desc .icon {
+    transform: rotate(180deg);
+  }
+  
+  .icon {
+    display: inline-block;
+    transition: transform 0.3s ease;
+    line-height: 1;
   }
 
   .count-display {
