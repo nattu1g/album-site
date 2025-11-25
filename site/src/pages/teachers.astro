@@ -23,25 +23,22 @@ const teachers = await getTeachers();
     
     <div class="teacher-grid">
       {teachers.map(teacher => (
-        <div class="teacher-card">
+        <a href={`https://nattu1g.github.io/album-site/teachers/${teacher.id}/`} class="teacher-card">
           <img 
             src={`https://nattu1g.github.io/album-site/images/teachers/${teacher.photo_filename}`} 
             alt={teacher.name}
             loading="lazy"
           />
-          <div class="teacher-info">
-            <h2>{teacher.name}</h2>
-            {teacher.subject && <p class="subject">{teacher.subject}</p>}
-            {teacher.comment && <p class="comment">{teacher.comment}</p>}
-            {teacher.tags.length > 0 && (
-              <div class="tags">
-                {teacher.tags.map(tag => (
-                  <span class="tag">{tag}</span>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+          <h2>{teacher.name}</h2>
+          {teacher.subject && <p class="subject">{teacher.subject}</p>}
+          {teacher.tags.length > 0 && (
+            <div class="tags">
+              {teacher.tags.map(tag => (
+                <span class="tag">{tag}</span>
+              ))}
+            </div>
+          )}
+        </a>
       ))}
     </div>
   </main>

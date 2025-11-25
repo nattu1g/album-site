@@ -174,3 +174,19 @@ export async function getEventById(id: string): Promise<Event | null> {
     const events = await getEvents();
     return events.find(e => e.id === id) || null;
 }
+
+/**
+ * IDで部活動を検索
+ */
+export async function getClubById(id: string): Promise<Club | null> {
+    const clubs = await getClubs();
+    return clubs.find(c => c.id === id) || null;
+}
+
+/**
+ * IDで先生を検索
+ */
+export async function getTeacherById(id: string): Promise<Teacher | null> {
+    const teachers = await getTeachers();
+    return teachers.find(t => t.id === id) || null;
+}

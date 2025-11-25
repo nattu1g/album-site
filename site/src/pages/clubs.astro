@@ -23,25 +23,22 @@ const clubs = await getClubs();
     
     <div class="club-grid">
       {clubs.map(club => (
-        <div class="club-card">
+        <a href={`https://nattu1g.github.io/album-site/clubs/${club.id}/`} class="club-card">
           <img 
             src={`https://nattu1g.github.io/album-site/images/clubs/${club.photo_filename}`} 
             alt={club.club_name}
             loading="lazy"
           />
-          <div class="club-info">
-            <h2>{club.club_name}</h2>
-            {club.date && <p class="date">{club.date}</p>}
-            {club.comment && <p class="comment">{club.comment}</p>}
-            {club.tags.length > 0 && (
-              <div class="tags">
-                {club.tags.map(tag => (
-                  <span class="tag">{tag}</span>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+          <h2>{club.club_name}</h2>
+          {club.date && <p class="date">{club.date}</p>}
+          {club.tags.length > 0 && (
+            <div class="tags">
+              {club.tags.map(tag => (
+                <span class="tag">{tag}</span>
+              ))}
+            </div>
+          )}
+        </a>
       ))}
     </div>
   </main>

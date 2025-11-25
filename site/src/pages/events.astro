@@ -23,21 +23,12 @@ const events = await getEvents();
     
     <div class="event-grid">
       {events.map(event => (
-        <div class="event-card">
+        <a href={`https://nattu1g.github.io/album-site/events/${event.id}/`} class="event-card">
           <img 
             src={`https://nattu1g.github.io/album-site/images/events/${event.photo_filename}`} 
             alt={event.title}
             loading="lazy"
           />
-          <div class="event-info">
-            <span class="category">{event.category}</span>
-            <h2>{event.title}</h2>
-            {event.date && <p class="date">{event.date}</p>}
-            {event.comment && <p class="comment">{event.comment}</p>}
-            {event.tags.length > 0 && (
-              <div class="tags">
-                {event.tags.map(tag => (
-                  <span class="tag">{tag}</span>
                 ))}
               </div>
             )}
