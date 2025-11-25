@@ -18,15 +18,15 @@ const students = await getStudents();
 
   <main>
     <div class="header">
-      <a href={import.meta.env.BASE_URL} class="back-button">← トップに戻る</a>
+      <a href="/album-site/" class="back-button">← トップに戻る</a>
       <h1>生徒一覧</h1>
     </div>
     
     <div class="student-grid">
       {students.map(student => (
-        <a href={`${import.meta.env.BASE_URL}students/${student.id}/`} class="student-card">
+        <a href={`/album-site/students/${student.id}/`} class="student-card">
           <img 
-            src={`${import.meta.env.BASE_URL}images/students/${student.photo_filename}`} 
+            src={`/album-site/images/students/${student.photo_filename}`} 
             alt={student.name}
             loading="lazy"
           />

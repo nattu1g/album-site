@@ -17,7 +17,7 @@ const teachers = await getTeachers();
 
   <main>
     <div class="header">
-      <a href={import.meta.env.BASE_URL} class="back-button">← トップに戻る</a>
+      <a href="/album-site/" class="back-button">← トップに戻る</a>
       <h1>先生</h1>
     </div>
     
@@ -25,7 +25,7 @@ const teachers = await getTeachers();
       {teachers.map(teacher => (
         <div class="teacher-card">
           <img 
-            src={`${import.meta.env.BASE_URL}images/teachers/${teacher.photo_filename}`} 
+            src={`/album-site/images/teachers/${teacher.photo_filename}`} 
             alt={teacher.name}
             loading="lazy"
           />

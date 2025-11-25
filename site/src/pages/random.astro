@@ -17,7 +17,7 @@ const students = await getStudents();
 
   <main>
     <div class="header">
-      <a href={import.meta.env.BASE_URL} class="back-button">← トップに戻る</a>
+      <a href="/album-site/" class="back-button">← トップに戻る</a>
       <h1>🎲 ランダム表示</h1>
       <p class="subtitle">ボタンを押してランダムに生徒を表示!</p>
     </div>
@@ -245,7 +245,7 @@ const students = await getStudents();
       const randomStudent = students[Math.floor(Math.random() * students.length)];
       
       // 結果を表示
-      resultImage.src = `${import.meta.env.BASE_URL}images/students/${randomStudent.photo_filename}`;
+      resultImage.src = `/album-site/images/students/${randomStudent.photo_filename}`;
       resultImage.alt = randomStudent.name;
       resultName.textContent = randomStudent.name;
       resultClass.textContent = randomStudent.class;
