@@ -26,7 +26,7 @@ const students = await getStudents();
       {students.map(student => (
         <a href={`https://nattu1g.github.io/album-site/students/${student.id}/`} class="student-card">
           <img 
-            src={`/album-site/images/students/${student.photo_filename}`} 
+            src={`https://nattu1g.github.io/album-site/images/students/${student.photo_filename}`} 
             alt={student.name}
             loading="lazy"
           />

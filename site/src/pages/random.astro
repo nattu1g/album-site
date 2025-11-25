@@ -245,7 +245,7 @@ const students = await getStudents();
       const randomStudent = students[Math.floor(Math.random() * students.length)];
       
       // 結果を表示
-      resultImage.src = `/album-site/images/students/${randomStudent.photo_filename}`;
+      resultImage.src = `https://nattu1g.github.io/album-site/images/students/${randomStudent.photo_filename}`;
       resultImage.alt = randomStudent.name;
       resultName.textContent = randomStudent.name;
       resultClass.textContent = randomStudent.class;
