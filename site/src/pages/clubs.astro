@@ -297,6 +297,52 @@ const clubs = await getClubs();
     border-color: #84fab0;
   }
 
+  .filter-box {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .filter-box select {
+    padding: 0.8rem 2rem 0.8rem 1rem;
+    border: 2px solid #eee;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    background-color: white;
+    cursor: pointer;
+  }
+
+  .sort-order-button {
+    background: white;
+    border: 2px solid #eee;
+    border-radius: 8px;
+    width: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1.2rem;
+    color: #84fab0;
+    flex-shrink: 0;
+  }
+
+  .sort-order-button:hover {
+    background: #f8f9fa;
+    border-color: #84fab0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .sort-order-button.desc .icon {
+    transform: rotate(180deg);
+  }
+  
+  .icon {
+    display: inline-block;
+    transition: transform 0.3s ease;
+    line-height: 1;
+  }
+
   .count-display {
     color: #666;
     font-size: 0.9rem;
