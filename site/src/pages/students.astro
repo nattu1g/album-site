@@ -1,5 +1,7 @@
 ---
 import { getStudents, normalizeForSearch } from '../lib/sheets';
+import { getStudentImage } from '../lib/images';
+import { Image } from 'astro:assets';
 import Auth from '../components/Auth.astro';
 
 const students = await getStudents();
@@ -54,31 +56,38 @@ const students = await getStudents();
     </div>
 
     <div class="student-grid" id="student-grid">
-      {students.map(student => (
-        <a 
-          href={`${import.meta.env.BASE_URL}/students/${student.id}/`} 
-          class="student-card"
-          data-name={student.name}
-          data-yomigana={student.yomigana}
-          data-class={student.class}
-          data-tags={JSON.stringify(student.tags)}
-        >
-          <img 
-            src={`${import.meta.env.BASE_URL}/images/students/${student.photo_filename}`} 
-            alt={student.name}
-            loading="lazy"
-          />
-          <h2>{student.name}</h2>
-          <p class="class">{student.class}</p>
-          {student.tags.length > 0 && (
+      {students.map((student) => {
+        const imagePromise = getStudentImage(student.photo_filename);
+        return (
+          <a 
+            href={`${import.meta.env.BASE_URL}/students/${student.id}/`} 
+            class="student-card"
+            data-name={student.name}
+            data-yomigana={student.yomigana}
+            data-class={student.class}
+            data-tags={JSON.stringify(student.tags)}
+          >
+            {imagePromise ? (
+              <Image 
+                src={imagePromise} 
+                alt={student.name}
+                width={400}
+                height={400}
+                format="webp"
+              />
+            ) : (
+              <div class="no-image">No Image</div>
+            )}
+            <h2>{student.name}</h2>
+            <div class="class">{student.class}</div>
             <div class="tags">
-              {student.tags.map(tag => (
+              {student.tags.map((tag) => (
                 <span class="tag">{tag}</span>
               ))}
             </div>
-          )}
-        </a>
-      ))}
+          </a>
+        );
+      })}
     </div>
 
     <script>

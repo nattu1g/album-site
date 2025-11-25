@@ -1,8 +1,20 @@
 ---
 import { getStudents } from '../lib/sheets';
+import { getStudentImage } from '../lib/images';
+import { getImage } from 'astro:assets';
 import Auth from '../components/Auth.astro';
 
 const students = await getStudents();
+
+// 画像URLを事前解決
+const studentsWithImages = await Promise.all(students.map(async (s) => {
+  const imagePromise = getStudentImage(s.photo_filename);
+  if (imagePromise) {
+    const optimizedImage = await getImage({ src: imagePromise, format: 'webp', width: 400, height: 400 });
+    return { ...s, imageSrc: optimizedImage.src };
+  }
+  return { ...s, imageSrc: null };
+}));
 ---
 
 <!DOCTYPE html>
@@ -100,87 +112,106 @@ const students = await getStudents();
 
   .gacha-button {
     background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    color: white;
     border: none;
-    padding: 2rem 4rem;
+    padding: 1.5rem 4rem;
     border-radius: 50px;
     font-size: 1.5rem;
-    font-weight: 700;
+    font-weight: bold;
+    color: white;
     cursor: pointer;
-    box-shadow: 0 10px 30px rgba(245, 87, 108, 0.4);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 10px 25px rgba(245, 87, 108, 0.4);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     position: relative;
     overflow: hidden;
   }
 
   .gacha-button:hover {
     transform: translateY(-5px) scale(1.05);
-    box-shadow: 0 15px 40px rgba(245, 87, 108, 0.6);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
   }
 
   .gacha-button:active {
-    transform: translateY(-2px) scale(1.02);
-  }
-
-  .gacha-button.spinning {
-    animation: spin 0.5s ease-in-out;
-  }
-
-  @keyframes spin {
-    0% { transform: rotate(0deg) scale(1); }
-    50% { transform: rotate(180deg) scale(1.1); }
-    100% { transform: rotate(360deg) scale(1); }
+    transform: translateY(2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
   }
 
   .result-container {
     width: 100%;
-    transition: opacity 0.5s ease, transform 0.5s ease;
+    max-width: 400px;
+    perspective: 1000px;
   }
 
   .result-container.hidden {
-    opacity: 0;
-    transform: scale(0.8);
-    pointer-events: none;
+    display: none;
+  }
+
+  .result-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: transform 0.3s ease;
+  }
+
+  .result-link:hover {
+    transform: scale(1.02);
   }
 
   .result-card {
     background: white;
+    padding: 2rem;
     border-radius: 24px;
-    padding: 3rem;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
     text-align: center;
-    animation: slideIn 0.5s ease-out;
+    animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
   }
-
-  @keyframes slideIn {
-    from {
-      opacity: 0;
-      transform: translateY(30px);
-    }
+  
+  .click-hint {
+    margin-top: 1rem;
+    color: #667eea;
+    font-size: 0.9rem;
+    font-weight: bold;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeInUp 0.5s ease 0.5s forwards;
+  }
+  
+  @keyframes fadeInUp {
     to {
       opacity: 1;
       transform: translateY(0);
     }
   }
 
+  .result-link:hover .click-hint {
+    text-decoration: underline;
+  }
+
+  @keyframes popIn {
+    0% {
+      opacity: 0;
+      transform: scale(0.5) rotateX(-90deg);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) rotateX(0);
+    }
+  }
+
   .result-card img {
-    width: 100%;
-    max-width: 300px;
-    aspect-ratio: 1;
+    width: 200px;
+    height: 200px;
     object-fit: cover;
     border-radius: 50%;
-    margin: 0 auto 1.5rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    margin-bottom: 1.5rem;
+    border: 5px solid #f0f2f5;
+    background: #f0f0f0;
   }
 
   .result-card h2 {
-    font-size: 2rem;
+    font-size: 1.8rem;
     color: #333;
     margin-bottom: 0.5rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
   }
 
   .class {
@@ -192,69 +223,31 @@ const students = await getStudents();
   .tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
     justify-content: center;
+    gap: 0.5rem;
   }
 
   .tag {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: #f0f2f5;
+    color: #555;
     padding: 0.5rem 1rem;
     border-radius: 20px;
     font-size: 0.9rem;
-    font-weight: 500;
-  }
-
-  .result-link {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-    transition: transform 0.3s ease;
-  }
-
-  .result-link:hover .result-card {
-    transform: translateY(-5px);
-    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4);
-  }
-
-  .click-hint {
-    margin-top: 1.5rem;
-    color: #667eea;
-    font-weight: 600;
-    font-size: 1rem;
-    animation: pulse 2s ease-in-out infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.6; }
   }
 
   @media (max-width: 768px) {
-    body {
-      padding: 1rem;
-    }
-
     h1 {
       font-size: 2rem;
     }
 
     .gacha-button {
-      padding: 1.5rem 3rem;
+      padding: 1rem 3rem;
       font-size: 1.2rem;
-    }
-
-    .result-card {
-      padding: 2rem;
-    }
-
-    .result-card h2 {
-      font-size: 1.5rem;
     }
   }
 </style>
 
-<script define:vars={{ students, baseUrl: import.meta.env.BASE_URL }}>
+<script define:vars={{ students: studentsWithImages, baseUrl: import.meta.env.BASE_URL }}>
   const gachaButton = document.getElementById('gacha-button');
   const resultContainer = document.getElementById('result-container');
   const resultLink = document.getElementById('result-link');
@@ -263,36 +256,56 @@ const students = await getStudents();
   const resultClass = document.getElementById('result-class');
   const resultTags = document.getElementById('result-tags');
 
+  let isAnimating = false;
+
   gachaButton?.addEventListener('click', () => {
-    // ボタンアニメーション
-    gachaButton.classList.add('spinning');
+    if (isAnimating) return;
+    isAnimating = true;
+
+    // 演出
+    resultContainer?.classList.add('hidden');
+    gachaButton.style.transform = 'scale(0.95)';
     
     setTimeout(() => {
-      gachaButton.classList.remove('spinning');
+      gachaButton.style.transform = '';
       
       // ランダムに生徒を選択
-      const randomStudent = students[Math.floor(Math.random() * students.length)];
+      const randomIndex = Math.floor(Math.random() * students.length);
+      const student = students[randomIndex];
+
+      // データをセット
+      if (resultImage) {
+        if (student.imageSrc) {
+          resultImage.src = student.imageSrc;
+        } else {
+          resultImage.src = ''; // またはプレースホルダー
+        }
+        resultImage.alt = student.name;
+      }
+      if (resultName) resultName.textContent = student.name;
+      if (resultClass) resultClass.textContent = student.class;
       
-      // 詳細ページへのリンクを設定
-      resultLink.href = `${baseUrl}/students/${randomStudent.id}/`;
-      
+      // リンク先を設定
+      if (resultLink) {
+        resultLink.href = `${baseUrl}/students/${student.id}/`;
+      }
+
+      if (resultTags) {
+        resultTags.innerHTML = student.tags
+          .map(tag => `<span class="tag">${tag}</span>`)
+          .join('');
+      }
+
       // 結果を表示
-      resultImage.src = `${baseUrl}/images/students/${randomStudent.photo_filename}`;
-      resultImage.alt = randomStudent.name;
-      resultName.textContent = randomStudent.name;
-      resultClass.textContent = randomStudent.class;
+      resultContainer?.classList.remove('hidden');
       
-      // タグを表示
-      resultTags.innerHTML = '';
-      randomStudent.tags.forEach(tag => {
-        const tagElement = document.createElement('span');
-        tagElement.className = 'tag';
-        tagElement.textContent = tag;
-        resultTags.appendChild(tagElement);
-      });
-      
-      // 結果コンテナを表示
-      resultContainer.classList.remove('hidden');
+      // アニメーション再実行のためにクラスを付け外し
+      const card = document.querySelector('.result-card');
+      card?.classList.remove('animate');
+      void card?.offsetWidth; // リフロー
+      card?.classList.add('animate');
+
+      isAnimating = false;
     }, 500);
   });
 </script>

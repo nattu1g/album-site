@@ -1,5 +1,7 @@
 ---
 import { getEvents } from '../lib/sheets';
+import { getEventImage } from '../lib/images';
+import { Image } from 'astro:assets';
 import Auth from '../components/Auth.astro';
 
 const events = await getEvents();
@@ -54,25 +56,45 @@ const events = await getEvents();
     </div>
 
     <div class="event-grid" id="event-grid">
-      {events.map(event => (
-        <a 
-          href={`${import.meta.env.BASE_URL}/events/${event.id}/`} 
-          class="event-card"
-          data-title={event.title}
-          data-category={event.category}
-          data-date={event.date}
-          data-tags={JSON.stringify(event.tags)}
-        >
-          <img 
-            src={`${import.meta.env.BASE_URL}/images/events/${event.photo_filename}`} 
-            alt={event.title}
-            loading="lazy"
-          />
-          <h2>{event.title}</h2>
-          <p class="date">{event.date}</p>
-          <p class="category">{event.category}</p>
-        </a>
-      ))}
+      {events.map(event => {
+        const imagePromise = getEventImage(event.photo_filename);
+        return (
+          <a 
+            href={`${import.meta.env.BASE_URL}/events/${event.id}/`} 
+            class="event-card"
+            data-title={event.title}
+            data-category={event.category}
+            data-date={event.date}
+            data-tags={JSON.stringify(event.tags)}
+          >
+            {imagePromise ? (
+              <Image 
+                src={imagePromise} 
+                alt={event.title}
+                width={400}
+                height={300}
+                format="webp"
+              />
+            ) : (
+              <div class="no-image">No Image</div>
+            )}
+            <div class="card-content">
+              <h2>{event.title}</h2>
+              <div class="meta">
+                <span class="date">{event.date}</span>
+                <span class="category">{event.category}</span>
+              </div>
+              {event.tags.length > 0 && (
+                <div class="tags">
+                  {event.tags.map(tag => (
+                    <span class="tag">{tag}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </a>
+        );
+      })}
     </div>
 
     <script>

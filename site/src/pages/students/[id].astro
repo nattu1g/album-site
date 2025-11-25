@@ -1,5 +1,7 @@
 ---
 import { getStudents, getStudentById } from '../../lib/sheets';
+import { getStudentImage } from '../../lib/images';
+import { Image } from 'astro:assets';
 import Auth from '../../components/Auth.astro';
 
 // 動的ルーティング: すべての生徒IDのパスを生成
@@ -13,6 +15,7 @@ export async function getStaticPaths() {
 }
 
 const { student } = Astro.props;
+const imagePromise = getStudentImage(student.photo_filename);
 ---
 
 <!DOCTYPE html>
@@ -32,12 +35,19 @@ const { student } = Astro.props;
 
     <div class="detail-container">
       <div class="image-section">
-        <img 
-          src={`${import.meta.env.BASE_URL}/images/students/${student.photo_filename}`} 
-          alt={student.name}
-          class="main-image"
-          id="main-image"
-        />
+        {imagePromise ? (
+          <Image 
+            src={imagePromise} 
+            alt={student.name}
+            class="main-image"
+            id="main-image"
+            width={800}
+            height={800}
+            format="webp"
+          />
+        ) : (
+          <div class="no-image">No Image</div>
+        )}
       </div>
 
       <div class="info-section">

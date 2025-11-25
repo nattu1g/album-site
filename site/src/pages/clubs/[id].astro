@@ -1,5 +1,7 @@
 ---
 import { getClubs, getClubById } from '../../lib/sheets';
+import { getClubImage } from '../../lib/images';
+import { Image } from 'astro:assets';
 import Auth from '../../components/Auth.astro';
 
 export async function getStaticPaths() {
@@ -11,6 +13,7 @@ export async function getStaticPaths() {
 }
 
 const { club } = Astro.props;
+const imagePromise = getClubImage(club.photo_filename);
 ---
 
 <!DOCTYPE html>
@@ -31,12 +34,19 @@ const { club } = Astro.props;
 
     <div class="detail-container">
       <div class="image-section">
-        <img 
-          src={`${import.meta.env.BASE_URL}/images/clubs/${club.photo_filename}`} 
-          alt={club.club_name}
-          class="main-image"
-          id="main-image"
-        />
+        {imagePromise ? (
+          <Image 
+            src={imagePromise} 
+            alt={club.club_name}
+            class="main-image"
+            id="main-image"
+            width={800}
+            height={600}
+            format="webp"
+          />
+        ) : (
+          <div class="no-image">No Image</div>
+        )}
         <p class="hint">※画像をクリックすると拡大します</p>
       </div>
 

@@ -1,5 +1,7 @@
 ---
 import { getTeachers } from '../lib/sheets';
+import { getTeacherImage } from '../lib/images';
+import { Image } from 'astro:assets';
 import Auth from '../components/Auth.astro';
 
 const teachers = await getTeachers();
@@ -53,30 +55,39 @@ const teachers = await getTeachers();
     </div>
 
     <div class="teacher-grid" id="teacher-grid">
-      {teachers.map(teacher => (
-        <a 
-          href={`${import.meta.env.BASE_URL}/teachers/${teacher.id}/`} 
-          class="teacher-card"
-          data-name={teacher.name}
-          data-subject={teacher.subject}
-          data-tags={JSON.stringify(teacher.tags)}
-        >
-          <img 
-            src={`${import.meta.env.BASE_URL}/images/teachers/${teacher.photo_filename}`} 
-            alt={teacher.name}
-            loading="lazy"
-          />
-          <h2>{teacher.name}</h2>
-          <p class="subject">{teacher.subject}</p>
-          {teacher.tags.length > 0 && (
-            <div class="tags">
-              {teacher.tags.map(tag => (
-                <span class="tag">{tag}</span>
-              ))}
-            </div>
-          )}
-        </a>
-      ))}
+      {teachers.map(teacher => {
+        const imagePromise = getTeacherImage(teacher.photo_filename);
+        return (
+          <a 
+            href={`${import.meta.env.BASE_URL}/teachers/${teacher.id}/`} 
+            class="teacher-card"
+            data-name={teacher.name}
+            data-subject={teacher.subject}
+            data-tags={JSON.stringify(teacher.tags)}
+          >
+            {imagePromise ? (
+              <Image 
+                src={imagePromise} 
+                alt={teacher.name}
+                width={400}
+                height={400}
+                format="webp"
+              />
+            ) : (
+              <div class="no-image">No Image</div>
+            )}
+            <h2>{teacher.name}</h2>
+            <p class="subject">{teacher.subject}</p>
+            {teacher.tags.length > 0 && (
+              <div class="tags">
+                {teacher.tags.map(tag => (
+                  <span class="tag">{tag}</span>
+                ))}
+              </div>
+            )}
+          </a>
+        );
+      })}
     </div>
 
     <script>
