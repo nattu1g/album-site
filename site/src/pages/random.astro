@@ -28,12 +28,15 @@ const students = await getStudents();
       </button>
 
       <div id="result-container" class="result-container hidden">
-        <div class="result-card">
-          <img id="result-image" src="" alt="" />
-          <h2 id="result-name"></h2>
-          <p id="result-class" class="class"></p>
-          <div id="result-tags" class="tags"></div>
-        </div>
+        <a id="result-link" href="#" class="result-link">
+          <div class="result-card">
+            <img id="result-image" src="" alt="" />
+            <h2 id="result-name"></h2>
+            <p id="result-class" class="class"></p>
+            <div id="result-tags" class="tags"></div>
+            <p class="click-hint">クリックで詳細を見る →</p>
+          </div>
+        </a>
       </div>
     </div>
   </main>
@@ -202,6 +205,31 @@ const students = await getStudents();
     font-weight: 500;
   }
 
+  .result-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: transform 0.3s ease;
+  }
+
+  .result-link:hover .result-card {
+    transform: translateY(-5px);
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4);
+  }
+
+  .click-hint {
+    margin-top: 1.5rem;
+    color: #667eea;
+    font-weight: 600;
+    font-size: 1rem;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
   @media (max-width: 768px) {
     body {
       padding: 1rem;
@@ -229,6 +257,7 @@ const students = await getStudents();
 <script define:vars={{ students, baseUrl: import.meta.env.BASE_URL }}>
   const gachaButton = document.getElementById('gacha-button');
   const resultContainer = document.getElementById('result-container');
+  const resultLink = document.getElementById('result-link');
   const resultImage = document.getElementById('result-image');
   const resultName = document.getElementById('result-name');
   const resultClass = document.getElementById('result-class');
@@ -243,6 +272,9 @@ const students = await getStudents();
       
       // ランダムに生徒を選択
       const randomStudent = students[Math.floor(Math.random() * students.length)];
+      
+      // 詳細ページへのリンクを設定
+      resultLink.href = `${baseUrl}/students/${randomStudent.id}/`;
       
       // 結果を表示
       resultImage.src = `${baseUrl}/images/students/${randomStudent.photo_filename}`;
