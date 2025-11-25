@@ -1,0 +1,172 @@
+---
+import { getStudents } from '../lib/sheets';
+import Auth from '../components/Auth.astro';
+
+const students = await getStudents();
+---
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>生徒一覧 - 卒業アルバム</title>
+</head>
+<body>
+  <!-- パスワード認証 -->
+  <Auth />
+
+  <main>
+    <div class="header">
+      <a href="/" class="back-button">← トップに戻る</a>
+      <h1>生徒一覧</h1>
+    </div>
+    
+    <div class="student-grid">
+      {students.map(student => (
+        <a href={`/students/${student.id}`} class="student-card">
+          <img 
+            src={`/images/students/${student.photo_filename}`} 
+            alt={student.name}
+            loading="lazy"
+          />
+          <h2>{student.name}</h2>
+          <p class="class">{student.class}</p>
+          {student.tags.length > 0 && (
+            <div class="tags">
+              {student.tags.map(tag => (
+                <span class="tag">{tag}</span>
+              ))}
+            </div>
+          )}
+        </a>
+      ))}
+    </div>
+  </main>
+</body>
+
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 2rem;
+  }
+
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .header {
+    margin-bottom: 2rem;
+  }
+
+  .back-button {
+    display: inline-block;
+    color: white;
+    text-decoration: none;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    transition: transform 0.2s ease;
+  }
+
+  .back-button:hover {
+    transform: translateX(-5px);
+  }
+
+  h1 {
+    color: white;
+    font-size: 2.5rem;
+    text-align: center;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .student-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 2rem;
+  }
+
+  .student-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+
+  .student-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+  }
+
+  .student-card img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    background: #f0f0f0;
+  }
+
+  .student-card h2 {
+    font-size: 1.25rem;
+    color: #333;
+    margin-bottom: 0.5rem;
+  }
+
+  .class {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .tag {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  @media (max-width: 768px) {
+    body {
+      padding: 1rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+    }
+
+    .student-grid {
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 1rem;
+    }
+
+    .student-card {
+      padding: 1rem;
+    }
+
+    .student-card h2 {
+      font-size: 1rem;
+    }
+  }
+</style>

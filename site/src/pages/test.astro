@@ -1,0 +1,51 @@
+---
+// テスト用のシンプルなページ
+import { getStudents } from '../lib/sheets';
+
+let students = [];
+let error = null;
+
+try {
+  students = await getStudents();
+  console.log('Students data:', students);
+} catch (e) {
+  error = e.message;
+  console.error('Error fetching students:', e);
+}
+---
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>データ取得テスト</title>
+</head>
+<body>
+  <h1>Google Sheets データ取得テスト</h1>
+  
+  {error ? (
+    <div style="color: red; padding: 20px; background: #fee;">
+      <h2>エラーが発生しました</h2>
+      <p>{error}</p>
+      <h3>確認事項:</h3>
+      <ul>
+        <li>スプレッドシートの公開設定が「リンクを知っている全員」になっているか</li>
+        <li>権限が「閲覧者」になっているか</li>
+        <li>GIDが正しいか</li>
+      </ul>
+    </div>
+  ) : students.length > 0 ? (
+    <div style="padding: 20px; background: #efe;">
+      <h2>✅ データ取得成功!</h2>
+      <p>{students.length}件の生徒データを取得しました</p>
+      <pre>{JSON.stringify(students, null, 2)}</pre>
+    </div>
+  ) : (
+    <div style="padding: 20px; background: #ffe;">
+      <h2>⚠️ データが空です</h2>
+      <p>スプレッドシートにデータが入力されているか確認してください</p>
+    </div>
+  )}
+</body>
+</html>
