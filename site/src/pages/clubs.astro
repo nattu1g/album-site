@@ -85,10 +85,6 @@ const clubs = await getClubs();
       function toggleSortOrder() {
         isAscending = !isAscending;
         if (sortOrderToggle) {
-          const icon = sortOrderToggle.querySelector('.icon');
-          if (icon) {
-            icon.textContent = isAscending ? '↑' : '↓';
-          }
           sortOrderToggle.classList.toggle('desc', !isAscending);
         }
         sortAndFilterClubs();
