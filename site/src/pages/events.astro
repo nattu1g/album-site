@@ -17,7 +17,7 @@ const events = await getEvents();
 
   <main>
     <div class="header">
-      <a href="/" class="back-button">← トップに戻る</a>
+      <a href={import.meta.env.BASE_URL} class="back-button">← トップに戻る</a>
       <h1>学校行事</h1>
     </div>
     
@@ -25,7 +25,7 @@ const events = await getEvents();
       {events.map(event => (
         <div class="event-card">
           <img 
-            src={`/images/events/${event.photo_filename}`} 
+            src={`${import.meta.env.BASE_URL}images/events/${event.photo_filename}`} 
             alt={event.title}
             loading="lazy"
           />
