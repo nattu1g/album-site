@@ -27,6 +27,11 @@ const students = await getStudents();
         <input type="text" id="search-input" placeholder="名前で検索..." />
       </div>
       <div class="filter-box">
+        <select id="sort-select">
+          <option value="default">デフォルト順</option>
+          <option value="name">名前順</option>
+          <option value="class">クラス順</option>
+        </select>
         <select id="class-filter">
           <option value="">全てのクラス</option>
           {[...new Set(students.map(s => s.class).filter(Boolean))].sort().map(cls => (
@@ -88,23 +93,52 @@ const students = await getStudents();
       }
 
       const searchInput = document.getElementById('search-input') as HTMLInputElement;
+      const sortSelect = document.getElementById('sort-select') as HTMLSelectElement;
       const classFilter = document.getElementById('class-filter') as HTMLSelectElement;
       const tagFilter = document.getElementById('tag-filter') as HTMLSelectElement;
       const studentGrid = document.getElementById('student-grid');
       const countDisplay = document.getElementById('count');
-      const cards = document.querySelectorAll('.student-card');
+      const cards = Array.from(document.querySelectorAll('.student-card'));
 
-      function filterStudents() {
+      function sortAndFilterStudents() {
         const searchTerm = normalizeForSearch(searchInput.value);
         const selectedClass = classFilter.value;
         const selectedTag = tagFilter.value;
+        const sortBy = sortSelect.value;
         let visibleCount = 0;
 
-        cards.forEach(card => {
-          const name = normalizeForSearch((card as HTMLElement).dataset.name || '');
-          const yomigana = normalizeForSearch((card as HTMLElement).dataset.yomigana || '');
-          const className = (card as HTMLElement).dataset.class || '';
-          const tags = JSON.parse((card as HTMLElement).dataset.tags || '[]');
+        // ソート処理
+        const sortedCards = [...cards].sort((a, b) => {
+          const aElement = a as HTMLElement;
+          const bElement = b as HTMLElement;
+
+          if (sortBy === 'name') {
+            // 読み仮名でソート
+            const aYomigana = aElement.dataset.yomigana || '';
+            const bYomigana = bElement.dataset.yomigana || '';
+            return aYomigana.localeCompare(bYomigana, 'ja');
+          } else if (sortBy === 'class') {
+            // クラスでソート
+            const aClass = aElement.dataset.class || '';
+            const bClass = bElement.dataset.class || '';
+            return aClass.localeCompare(bClass, 'ja');
+          }
+          // デフォルト順（元の順序を維持）
+          return 0;
+        });
+
+        // グリッドをクリア
+        if (studentGrid) {
+          studentGrid.innerHTML = '';
+        }
+
+        // ソート済みのカードを追加してフィルタリング
+        sortedCards.forEach(card => {
+          const cardElement = card as HTMLElement;
+          const name = normalizeForSearch(cardElement.dataset.name || '');
+          const yomigana = normalizeForSearch(cardElement.dataset.yomigana || '');
+          const className = cardElement.dataset.class || '';
+          const tags = JSON.parse(cardElement.dataset.tags || '[]');
 
           // 名前または読み仮名で検索（ひらがな・カタカナ両対応）
           const matchesSearch = name.includes(searchTerm) || yomigana.includes(searchTerm);
@@ -112,11 +146,13 @@ const students = await getStudents();
           const matchesTag = selectedTag === '' || tags.includes(selectedTag);
 
           if (matchesSearch && matchesClass && matchesTag) {
-            (card as HTMLElement).style.display = '';
+            cardElement.style.display = '';
             visibleCount++;
           } else {
-            (card as HTMLElement).style.display = 'none';
+            cardElement.style.display = 'none';
           }
+
+          studentGrid?.appendChild(cardElement);
         });
 
         if (countDisplay) {
@@ -124,9 +160,10 @@ const students = await getStudents();
         }
       }
 
-      searchInput?.addEventListener('input', filterStudents);
-      classFilter?.addEventListener('change', filterStudents);
-      tagFilter?.addEventListener('change', filterStudents);
+      searchInput?.addEventListener('input', sortAndFilterStudents);
+      sortSelect?.addEventListener('change', sortAndFilterStudents);
+      classFilter?.addEventListener('change', sortAndFilterStudents);
+      tagFilter?.addEventListener('change', sortAndFilterStudents);
     </script>
   </main>
 </body>

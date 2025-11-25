@@ -26,6 +26,12 @@ const events = await getEvents();
         <input type="text" id="search-input" placeholder="行事名で検索..." />
       </div>
       <div class="filter-box">
+        <select id="sort-select">
+          <option value="default">デフォルト順</option>
+          <option value="title">タイトル順</option>
+          <option value="date">日付順（新しい順）</option>
+          <option value="category">カテゴリ順</option>
+        </select>
         <select id="category-filter">
           <option value="">全てのカテゴリ</option>
           {[...new Set(events.map(e => e.category).filter(Boolean))].sort().map(cat => (
@@ -51,6 +57,7 @@ const events = await getEvents();
           class="event-card"
           data-title={event.title}
           data-category={event.category}
+          data-date={event.date}
           data-tags={JSON.stringify(event.tags)}
         >
           <img 
@@ -67,32 +74,63 @@ const events = await getEvents();
 
     <script>
       const searchInput = document.getElementById('search-input') as HTMLInputElement;
+      const sortSelect = document.getElementById('sort-select') as HTMLSelectElement;
       const categoryFilter = document.getElementById('category-filter') as HTMLSelectElement;
       const tagFilter = document.getElementById('tag-filter') as HTMLSelectElement;
+      const eventGrid = document.getElementById('event-grid');
       const countDisplay = document.getElementById('count');
-      const cards = document.querySelectorAll('.event-card');
+      const cards = Array.from(document.querySelectorAll('.event-card'));
 
-      function filterEvents() {
+      function sortAndFilterEvents() {
         const searchTerm = searchInput.value.toLowerCase();
         const selectedCategory = categoryFilter.value;
         const selectedTag = tagFilter.value;
+        const sortBy = sortSelect.value;
         let visibleCount = 0;
 
-        cards.forEach(card => {
-          const title = (card as HTMLElement).dataset.title?.toLowerCase() || '';
-          const category = (card as HTMLElement).dataset.category || '';
-          const tags = JSON.parse((card as HTMLElement).dataset.tags || '[]');
+        // ソート処理
+        const sortedCards = [...cards].sort((a, b) => {
+          const aElement = a as HTMLElement;
+          const bElement = b as HTMLElement;
+
+          if (sortBy === 'title') {
+            const aTitle = aElement.dataset.title || '';
+            const bTitle = bElement.dataset.title || '';
+            return aTitle.localeCompare(bTitle, 'ja');
+          } else if (sortBy === 'date') {
+            const aDate = aElement.dataset.date || '';
+            const bDate = bElement.dataset.date || '';
+            return bDate.localeCompare(aDate); // 新しい順
+          } else if (sortBy === 'category') {
+            const aCategory = aElement.dataset.category || '';
+            const bCategory = bElement.dataset.category || '';
+            return aCategory.localeCompare(bCategory, 'ja');
+          }
+          return 0;
+        });
+
+        if (eventGrid) {
+          eventGrid.innerHTML = '';
+        }
+
+        sortedCards.forEach(card => {
+          const cardElement = card as HTMLElement;
+          const title = cardElement.dataset.title?.toLowerCase() || '';
+          const category = cardElement.dataset.category || '';
+          const tags = JSON.parse(cardElement.dataset.tags || '[]');
 
           const matchesSearch = title.includes(searchTerm);
           const matchesCategory = selectedCategory === '' || category === selectedCategory;
           const matchesTag = selectedTag === '' || tags.includes(selectedTag);
 
           if (matchesSearch && matchesCategory && matchesTag) {
-            (card as HTMLElement).style.display = '';
+            cardElement.style.display = '';
             visibleCount++;
           } else {
-            (card as HTMLElement).style.display = 'none';
+            cardElement.style.display = 'none';
           }
+
+          eventGrid?.appendChild(cardElement);
         });
 
         if (countDisplay) {
@@ -100,9 +138,10 @@ const events = await getEvents();
         }
       }
 
-      searchInput?.addEventListener('input', filterEvents);
-      categoryFilter?.addEventListener('change', filterEvents);
-      tagFilter?.addEventListener('change', filterEvents);
+      searchInput?.addEventListener('input', sortAndFilterEvents);
+      sortSelect?.addEventListener('change', sortAndFilterEvents);
+      categoryFilter?.addEventListener('change', sortAndFilterEvents);
+      tagFilter?.addEventListener('change', sortAndFilterEvents);
     </script>
   </main>
 </body>

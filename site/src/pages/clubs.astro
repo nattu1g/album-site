@@ -26,6 +26,10 @@ const clubs = await getClubs();
         <input type="text" id="search-input" placeholder="部活動名で検索..." />
       </div>
       <div class="filter-box">
+        <select id="sort-select">
+          <option value="default">デフォルト順</option>
+          <option value="name">部活動名順</option>
+        </select>
         <select id="tag-filter">
           <option value="">全てのタグ</option>
           {[...new Set(clubs.flatMap(c => c.tags).filter(Boolean))].sort().map(tag => (
@@ -66,28 +70,50 @@ const clubs = await getClubs();
 
     <script>
       const searchInput = document.getElementById('search-input') as HTMLInputElement;
+      const sortSelect = document.getElementById('sort-select') as HTMLSelectElement;
       const tagFilter = document.getElementById('tag-filter') as HTMLSelectElement;
+      const clubGrid = document.getElementById('club-grid');
       const countDisplay = document.getElementById('count');
-      const cards = document.querySelectorAll('.club-card');
+      const cards = Array.from(document.querySelectorAll('.club-card'));
 
-      function filterClubs() {
+      function sortAndFilterClubs() {
         const searchTerm = searchInput.value.toLowerCase();
         const selectedTag = tagFilter.value;
+        const sortBy = sortSelect.value;
         let visibleCount = 0;
 
-        cards.forEach(card => {
-          const name = (card as HTMLElement).dataset.name?.toLowerCase() || '';
-          const tags = JSON.parse((card as HTMLElement).dataset.tags || '[]');
+        const sortedCards = [...cards].sort((a, b) => {
+          const aElement = a as HTMLElement;
+          const bElement = b as HTMLElement;
+
+          if (sortBy === 'name') {
+            const aName = aElement.dataset.name || '';
+            const bName = bElement.dataset.name || '';
+            return aName.localeCompare(bName, 'ja');
+          }
+          return 0;
+        });
+
+        if (clubGrid) {
+          clubGrid.innerHTML = '';
+        }
+
+        sortedCards.forEach(card => {
+          const cardElement = card as HTMLElement;
+          const name = cardElement.dataset.name?.toLowerCase() || '';
+          const tags = JSON.parse(cardElement.dataset.tags || '[]');
 
           const matchesSearch = name.includes(searchTerm);
           const matchesTag = selectedTag === '' || tags.includes(selectedTag);
 
           if (matchesSearch && matchesTag) {
-            (card as HTMLElement).style.display = '';
+            cardElement.style.display = '';
             visibleCount++;
           } else {
-            (card as HTMLElement).style.display = 'none';
+            cardElement.style.display = 'none';
           }
+
+          clubGrid?.appendChild(cardElement);
         });
 
         if (countDisplay) {
@@ -95,8 +121,9 @@ const clubs = await getClubs();
         }
       }
 
-      searchInput?.addEventListener('input', filterClubs);
-      tagFilter?.addEventListener('change', filterClubs);
+      searchInput?.addEventListener('input', sortAndFilterClubs);
+      sortSelect?.addEventListener('change', sortAndFilterClubs);
+      tagFilter?.addEventListener('change', sortAndFilterClubs);
     </script>
   </main>
 </body>

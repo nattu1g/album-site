@@ -26,6 +26,11 @@ const teachers = await getTeachers();
         <input type="text" id="search-input" placeholder="先生の名前で検索..." />
       </div>
       <div class="filter-box">
+        <select id="sort-select">
+          <option value="default">デフォルト順</option>
+          <option value="name">名前順</option>
+          <option value="subject">担当教科順</option>
+        </select>
         <select id="subject-filter">
           <option value="">全ての教科</option>
           {[...new Set(teachers.map(t => t.subject).filter(Boolean))].sort().map(sub => (
@@ -73,32 +78,58 @@ const teachers = await getTeachers();
 
     <script>
       const searchInput = document.getElementById('search-input') as HTMLInputElement;
+      const sortSelect = document.getElementById('sort-select') as HTMLSelectElement;
       const subjectFilter = document.getElementById('subject-filter') as HTMLSelectElement;
       const tagFilter = document.getElementById('tag-filter') as HTMLSelectElement;
+      const teacherGrid = document.getElementById('teacher-grid');
       const countDisplay = document.getElementById('count');
-      const cards = document.querySelectorAll('.teacher-card');
+      const cards = Array.from(document.querySelectorAll('.teacher-card'));
 
-      function filterTeachers() {
+      function sortAndFilterTeachers() {
         const searchTerm = searchInput.value.toLowerCase();
         const selectedSubject = subjectFilter.value;
         const selectedTag = tagFilter.value;
+        const sortBy = sortSelect.value;
         let visibleCount = 0;
 
-        cards.forEach(card => {
-          const name = (card as HTMLElement).dataset.name?.toLowerCase() || '';
-          const subject = (card as HTMLElement).dataset.subject || '';
-          const tags = JSON.parse((card as HTMLElement).dataset.tags || '[]');
+        const sortedCards = [...cards].sort((a, b) => {
+          const aElement = a as HTMLElement;
+          const bElement = b as HTMLElement;
+
+          if (sortBy === 'name') {
+            const aName = aElement.dataset.name || '';
+            const bName = bElement.dataset.name || '';
+            return aName.localeCompare(bName, 'ja');
+          } else if (sortBy === 'subject') {
+            const aSubject = aElement.dataset.subject || '';
+            const bSubject = bElement.dataset.subject || '';
+            return aSubject.localeCompare(bSubject, 'ja');
+          }
+          return 0;
+        });
+
+        if (teacherGrid) {
+          teacherGrid.innerHTML = '';
+        }
+
+        sortedCards.forEach(card => {
+          const cardElement = card as HTMLElement;
+          const name = cardElement.dataset.name?.toLowerCase() || '';
+          const subject = cardElement.dataset.subject || '';
+          const tags = JSON.parse(cardElement.dataset.tags || '[]');
 
           const matchesSearch = name.includes(searchTerm);
           const matchesSubject = selectedSubject === '' || subject === selectedSubject;
           const matchesTag = selectedTag === '' || tags.includes(selectedTag);
 
           if (matchesSearch && matchesSubject && matchesTag) {
-            (card as HTMLElement).style.display = '';
+            cardElement.style.display = '';
             visibleCount++;
           } else {
-            (card as HTMLElement).style.display = 'none';
+            cardElement.style.display = 'none';
           }
+
+          teacherGrid?.appendChild(cardElement);
         });
 
         if (countDisplay) {
@@ -106,9 +137,10 @@ const teachers = await getTeachers();
         }
       }
 
-      searchInput?.addEventListener('input', filterTeachers);
-      subjectFilter?.addEventListener('change', filterTeachers);
-      tagFilter?.addEventListener('change', filterTeachers);
+      searchInput?.addEventListener('input', sortAndFilterTeachers);
+      sortSelect?.addEventListener('change', sortAndFilterTeachers);
+      subjectFilter?.addEventListener('change', sortAndFilterTeachers);
+      tagFilter?.addEventListener('change', sortAndFilterTeachers);
     </script>
   </main>
 </body>
