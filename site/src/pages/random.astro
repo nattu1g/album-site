@@ -3,6 +3,7 @@ import { getStudents } from '../lib/sheets';
 import { getStudentImage } from '../lib/images';
 import { getImage } from 'astro:assets';
 import Auth from '../components/Auth.astro';
+import BGM from '../components/BGM.astro';
 
 const students = await getStudents();
 
@@ -52,6 +53,8 @@ const studentsWithImages = await Promise.all(students.map(async (s) => {
       </div>
     </div>
   </main>
+
+  <BGM />
 </body>
 
 <style>

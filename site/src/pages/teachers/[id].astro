@@ -3,6 +3,7 @@ import { getTeachers, getTeacherById } from '../../lib/sheets';
 import { getTeacherImage } from '../../lib/images';
 import { Image } from 'astro:assets';
 import Auth from '../../components/Auth.astro';
+import BGM from '../../components/BGM.astro';
 
 export async function getStaticPaths() {
   const teachers = await getTeachers();
@@ -83,6 +84,8 @@ const imagePromise = getTeacherImage(teacher.photo_filename);
     <img class="modal-content" id="modal-img">
     <div id="caption"></div>
   </div>
+
+  <BGM />
 </body>
 
 <style>

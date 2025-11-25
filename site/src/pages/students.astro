@@ -3,6 +3,7 @@ import { getStudents, normalizeForSearch } from '../lib/sheets';
 import { getStudentImage } from '../lib/images';
 import { Image } from 'astro:assets';
 import Auth from '../components/Auth.astro';
+import BGM from '../components/BGM.astro';
 
 const students = await getStudents();
 ---
@@ -195,6 +196,8 @@ const students = await getStudents();
       tagFilter?.addEventListener('change', sortAndFilterStudents);
     </script>
   </main>
+
+  <BGM />
 </body>
 
 <style>

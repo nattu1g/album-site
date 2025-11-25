@@ -53,8 +53,73 @@ import Auth from '../components/Auth.astro';
           <p>ガチャで誰かを表示!</p>
         </a>
       </nav>
+
+      <!-- YouTubeチャンネルリンク -->
+      <div class="youtube-link-container">
+        <a href="https://www.youtube.com/@sundayman521" target="_blank" rel="noopener noreferrer" class="youtube-link">
+          <div class="youtube-icon">▶️</div>
+          <div class="youtube-text">
+            <span class="youtube-title">YouTubeチャンネル</span>
+            <span class="youtube-subtitle">動画で思い出を振り返る</span>
+          </div>
+        </a>
+      </div>
     </div>
   </main>
+
+  <!-- BGM -->
+  <audio id="bgm" loop>
+    <source src={`${import.meta.env.BASE_URL}/audio/bgm.mp3`} type="audio/mpeg">
+  </audio>
+
+  <script src={`${import.meta.env.BASE_URL}/js/bgm-manager.js`}></script>
+  <script>
+    // パスワード認証後にBGMを再生
+    console.log('BGM script loaded');
+    
+    const bgm = document.getElementById('bgm') as HTMLAudioElement;
+    const mainContent = document.getElementById('main-content');
+    
+    console.log('BGM element:', bgm);
+    console.log('Main content:', mainContent);
+    console.log('BGMManager available:', typeof window.BGMManager);
+    
+    if (bgm && mainContent) {
+      if (!window.BGMManager) {
+        console.error('BGMManager not loaded!');
+      } else {
+        const bgmManager = new window.BGMManager();
+        console.log('BGMManager instance created');
+        
+        // メインコンテンツが表示されたらBGMを初期化
+        const observer = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+              const display = window.getComputedStyle(mainContent).display;
+              console.log('Main content display changed:', display);
+              if (display !== 'none') {
+                console.log('Initializing BGM...');
+                bgmManager.init(bgm);
+                observer.disconnect(); // 一度初期化したら監視を停止
+              }
+            }
+          });
+        });
+        
+        observer.observe(mainContent, { attributes: true });
+        
+        // 初期状態でメインコンテンツが表示されている場合
+        const currentDisplay = window.getComputedStyle(mainContent).display;
+        console.log('Initial main content display:', currentDisplay);
+        if (currentDisplay !== 'none') {
+          console.log('Initializing BGM immediately...');
+          bgmManager.init(bgm);
+        }
+      }
+    } else {
+      console.error('BGM or main content not found!');
+    }
+  </script>
 </body>
 
 <style>
@@ -138,6 +203,51 @@ import Auth from '../components/Auth.astro';
 
   .menu-card.special p {
     opacity: 0.95;
+  }
+
+  /* YouTubeリンク */
+  .youtube-link-container {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+  }
+
+  .youtube-link {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+    color: white;
+    padding: 1.5rem 2.5rem;
+    border-radius: 50px;
+    text-decoration: none;
+    box-shadow: 0 10px 30px rgba(255, 0, 0, 0.3);
+    transition: all 0.3s ease;
+  }
+
+  .youtube-link:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(255, 0, 0, 0.4);
+  }
+
+  .youtube-icon {
+    font-size: 2rem;
+  }
+
+  .youtube-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .youtube-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+
+  .youtube-subtitle {
+    font-size: 0.85rem;
+    opacity: 0.9;
   }
 
   @media (max-width: 768px) {

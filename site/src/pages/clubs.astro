@@ -3,6 +3,7 @@ import { getClubs } from '../lib/sheets';
 import { getClubImage } from '../lib/images';
 import { Image } from 'astro:assets';
 import Auth from '../components/Auth.astro';
+import BGM from '../components/BGM.astro';
 
 const clubs = await getClubs();
 ---
@@ -157,6 +158,8 @@ const clubs = await getClubs();
       tagFilter?.addEventListener('change', sortAndFilterClubs);
     </script>
   </main>
+
+  <BGM />
 </body>
 
 <style>

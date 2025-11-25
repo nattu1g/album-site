@@ -3,6 +3,7 @@ import { getTeachers } from '../lib/sheets';
 import { getTeacherImage } from '../lib/images';
 import { Image } from 'astro:assets';
 import Auth from '../components/Auth.astro';
+import BGM from '../components/BGM.astro';
 
 const teachers = await getTeachers();
 ---
@@ -174,6 +175,8 @@ const teachers = await getTeachers();
       tagFilter?.addEventListener('change', sortAndFilterTeachers);
     </script>
   </main>
+
+  <BGM />
 </body>
 
 <style>

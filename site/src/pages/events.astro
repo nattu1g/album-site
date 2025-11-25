@@ -3,6 +3,7 @@ import { getEvents } from '../lib/sheets';
 import { getEventImage } from '../lib/images';
 import { Image } from 'astro:assets';
 import Auth from '../components/Auth.astro';
+import BGM from '../components/BGM.astro';
 
 const events = await getEvents();
 ---
@@ -194,6 +195,8 @@ const events = await getEvents();
       tagFilter?.addEventListener('change', sortAndFilterEvents);
     </script>
   </main>
+
+  <BGM />
 </body>
 
 <style>
