@@ -21,16 +21,38 @@ const teachers = await getTeachers();
       <h1>先生</h1>
     </div>
     
-    <div class="teacher-grid">
+    <div class="controls">
+      <div class="search-box">
+        <input type="text" id="search-input" placeholder="先生の名前で検索..." />
+      </div>
+      <div class="filter-box">
+        <select id="subject-filter">
+          <option value="">全ての教科</option>
+          {[...new Set(teachers.map(t => t.subject).filter(Boolean))].sort().map(sub => (
+            <option value={sub}>{sub}</option>
+          ))}
+        </select>
+      </div>
+      <div class="count-display">
+        表示: <span id="count">{teachers.length}</span> / {teachers.length} 名
+      </div>
+    </div>
+
+    <div class="teacher-grid" id="teacher-grid">
       {teachers.map(teacher => (
-        <a href={`https://nattu1g.github.io/album-site/teachers/${teacher.id}/`} class="teacher-card">
+        <a 
+          href={`https://nattu1g.github.io/album-site/teachers/${teacher.id}/`} 
+          class="teacher-card"
+          data-name={teacher.name}
+          data-subject={teacher.subject}
+        >
           <img 
             src={`https://nattu1g.github.io/album-site/images/teachers/${teacher.photo_filename}`} 
             alt={teacher.name}
             loading="lazy"
           />
           <h2>{teacher.name}</h2>
-          {teacher.subject && <p class="subject">{teacher.subject}</p>}
+          <p class="subject">{teacher.subject}</p>
           {teacher.tags.length > 0 && (
             <div class="tags">
               {teacher.tags.map(tag => (
@@ -41,6 +63,41 @@ const teachers = await getTeachers();
         </a>
       ))}
     </div>
+
+    <script>
+      const searchInput = document.getElementById('search-input') as HTMLInputElement;
+      const subjectFilter = document.getElementById('subject-filter') as HTMLSelectElement;
+      const countDisplay = document.getElementById('count');
+      const cards = document.querySelectorAll('.teacher-card');
+
+      function filterTeachers() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedSubject = subjectFilter.value;
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+          const name = (card as HTMLElement).dataset.name?.toLowerCase() || '';
+          const subject = (card as HTMLElement).dataset.subject || '';
+
+          const matchesSearch = name.includes(searchTerm);
+          const matchesSubject = selectedSubject === '' || subject === selectedSubject;
+
+          if (matchesSearch && matchesSubject) {
+            (card as HTMLElement).style.display = '';
+            visibleCount++;
+          } else {
+            (card as HTMLElement).style.display = 'none';
+          }
+        });
+
+        if (countDisplay) {
+          countDisplay.textContent = visibleCount.toString();
+        }
+      }
+
+      searchInput?.addEventListener('input', filterTeachers);
+      subjectFilter?.addEventListener('change', filterTeachers);
+    </script>
   </main>
 </body>
 
@@ -126,6 +183,60 @@ const teachers = await getTeachers();
     font-size: 1.5rem;
     color: #333;
     margin-bottom: 0.5rem;
+  }
+
+  .controls {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 16px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .search-box {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .search-box input {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 2px solid #eee;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+  }
+
+  .search-box input:focus {
+    outline: none;
+    border-color: #a8edea;
+  }
+
+  .filter-box select {
+    padding: 0.8rem 2rem 0.8rem 1rem;
+    border: 2px solid #eee;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    background-color: white;
+    cursor: pointer;
+  }
+
+  .count-display {
+    color: #666;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  @media (max-width: 768px) {
+    .controls {
+      flex-direction: column;
+      align-items: stretch;
+    }
   }
 
   .subject {

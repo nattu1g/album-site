@@ -21,21 +21,77 @@ const events = await getEvents();
       <h1>学校行事</h1>
     </div>
     
-    <div class="event-grid">
+    <div class="controls">
+      <div class="search-box">
+        <input type="text" id="search-input" placeholder="行事名で検索..." />
+      </div>
+      <div class="filter-box">
+        <select id="category-filter">
+          <option value="">全てのカテゴリ</option>
+          {[...new Set(events.map(e => e.category).filter(Boolean))].sort().map(cat => (
+            <option value={cat}>{cat}</option>
+          ))}
+        </select>
+      </div>
+      <div class="count-display">
+        表示: <span id="count">{events.length}</span> / {events.length} 件
+      </div>
+    </div>
+
+    <div class="event-grid" id="event-grid">
       {events.map(event => (
-        <a href={`https://nattu1g.github.io/album-site/events/${event.id}/`} class="event-card">
+        <a 
+          href={`https://nattu1g.github.io/album-site/events/${event.id}/`} 
+          class="event-card"
+          data-title={event.title}
+          data-category={event.category}
+        >
           <img 
             src={`https://nattu1g.github.io/album-site/images/events/${event.photo_filename}`} 
             alt={event.title}
             loading="lazy"
           />
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+          <h2>{event.title}</h2>
+          <p class="date">{event.date}</p>
+          <p class="category">{event.category}</p>
+        </a>
       ))}
     </div>
+
+    <script>
+      const searchInput = document.getElementById('search-input') as HTMLInputElement;
+      const categoryFilter = document.getElementById('category-filter') as HTMLSelectElement;
+      const countDisplay = document.getElementById('count');
+      const cards = document.querySelectorAll('.event-card');
+
+      function filterEvents() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedCategory = categoryFilter.value;
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+          const title = (card as HTMLElement).dataset.title?.toLowerCase() || '';
+          const category = (card as HTMLElement).dataset.category || '';
+
+          const matchesSearch = title.includes(searchTerm);
+          const matchesCategory = selectedCategory === '' || category === selectedCategory;
+
+          if (matchesSearch && matchesCategory) {
+            (card as HTMLElement).style.display = '';
+            visibleCount++;
+          } else {
+            (card as HTMLElement).style.display = 'none';
+          }
+        });
+
+        if (countDisplay) {
+          countDisplay.textContent = visibleCount.toString();
+        }
+      }
+
+      searchInput?.addEventListener('input', filterEvents);
+      categoryFilter?.addEventListener('change', filterEvents);
+    </script>
   </main>
 </body>
 

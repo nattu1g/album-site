@@ -21,16 +21,29 @@ const clubs = await getClubs();
       <h1>部活動</h1>
     </div>
     
-    <div class="club-grid">
+    <div class="controls">
+      <div class="search-box">
+        <input type="text" id="search-input" placeholder="部活動名で検索..." />
+      </div>
+      <div class="count-display">
+        表示: <span id="count">{clubs.length}</span> / {clubs.length} 件
+      </div>
+    </div>
+
+    <div class="club-grid" id="club-grid">
       {clubs.map(club => (
-        <a href={`https://nattu1g.github.io/album-site/clubs/${club.id}/`} class="club-card">
+        <a 
+          href={`https://nattu1g.github.io/album-site/clubs/${club.id}/`} 
+          class="club-card"
+          data-name={club.club_name}
+        >
           <img 
             src={`https://nattu1g.github.io/album-site/images/clubs/${club.photo_filename}`} 
             alt={club.club_name}
             loading="lazy"
           />
           <h2>{club.club_name}</h2>
-          {club.date && <p class="date">{club.date}</p>}
+          <p class="date">{club.date}</p>
           {club.tags.length > 0 && (
             <div class="tags">
               {club.tags.map(tag => (
@@ -41,6 +54,34 @@ const clubs = await getClubs();
         </a>
       ))}
     </div>
+
+    <script>
+      const searchInput = document.getElementById('search-input') as HTMLInputElement;
+      const countDisplay = document.getElementById('count');
+      const cards = document.querySelectorAll('.club-card');
+
+      function filterClubs() {
+        const searchTerm = searchInput.value.toLowerCase();
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+          const name = (card as HTMLElement).dataset.name?.toLowerCase() || '';
+
+          if (name.includes(searchTerm)) {
+            (card as HTMLElement).style.display = '';
+            visibleCount++;
+          } else {
+            (card as HTMLElement).style.display = 'none';
+          }
+        });
+
+        if (countDisplay) {
+          countDisplay.textContent = visibleCount.toString();
+        }
+      }
+
+      searchInput?.addEventListener('input', filterClubs);
+    </script>
   </main>
 </body>
 
@@ -117,6 +158,51 @@ const clubs = await getClubs();
     padding: 1.5rem;
   }
 
+  .controls {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 16px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .search-box {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .search-box input {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 2px solid #eee;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+  }
+
+  .search-box input:focus {
+    outline: none;
+    border-color: #84fab0;
+  }
+
+  .count-display {
+    color: #666;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  @media (max-width: 768px) {
+    .controls {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+  
   .club-card h2 {
     font-size: 1.5rem;
     color: #333;

@@ -22,9 +22,38 @@ const students = await getStudents();
       <h1>生徒一覧</h1>
     </div>
     
-    <div class="student-grid">
+    <div class="controls">
+      <div class="search-box">
+        <input type="text" id="search-input" placeholder="名前で検索..." />
+      </div>
+      <div class="filter-box">
+        <select id="class-filter">
+          <option value="">全てのクラス</option>
+          {[...new Set(students.map(s => s.class).filter(Boolean))].sort().map(cls => (
+            <option value={cls}>{cls}</option>
+          ))}
+        </select>
+        <select id="tag-filter">
+          <option value="">全てのタグ</option>
+          {[...new Set(students.flatMap(s => s.tags).filter(Boolean))].sort().map(tag => (
+            <option value={tag}>{tag}</option>
+          ))}
+        </select>
+      </div>
+      <div class="count-display">
+        表示: <span id="count">{students.length}</span> / {students.length} 名
+      </div>
+    </div>
+
+    <div class="student-grid" id="student-grid">
       {students.map(student => (
-        <a href={`https://nattu1g.github.io/album-site/students/${student.id}/`} class="student-card">
+        <a 
+          href={`https://nattu1g.github.io/album-site/students/${student.id}/`} 
+          class="student-card"
+          data-name={student.name}
+          data-class={student.class}
+          data-tags={JSON.stringify(student.tags)}
+        >
           <img 
             src={`https://nattu1g.github.io/album-site/images/students/${student.photo_filename}`} 
             alt={student.name}
@@ -42,6 +71,47 @@ const students = await getStudents();
         </a>
       ))}
     </div>
+
+    <script>
+      const searchInput = document.getElementById('search-input') as HTMLInputElement;
+      const classFilter = document.getElementById('class-filter') as HTMLSelectElement;
+      const tagFilter = document.getElementById('tag-filter') as HTMLSelectElement;
+      const studentGrid = document.getElementById('student-grid');
+      const countDisplay = document.getElementById('count');
+      const cards = document.querySelectorAll('.student-card');
+
+      function filterStudents() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedClass = classFilter.value;
+        const selectedTag = tagFilter.value;
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+          const name = (card as HTMLElement).dataset.name?.toLowerCase() || '';
+          const className = (card as HTMLElement).dataset.class || '';
+          const tags = JSON.parse((card as HTMLElement).dataset.tags || '[]');
+
+          const matchesSearch = name.includes(searchTerm);
+          const matchesClass = selectedClass === '' || className === selectedClass;
+          const matchesTag = selectedTag === '' || tags.includes(selectedTag);
+
+          if (matchesSearch && matchesClass && matchesTag) {
+            (card as HTMLElement).style.display = '';
+            visibleCount++;
+          } else {
+            (card as HTMLElement).style.display = 'none';
+          }
+        });
+
+        if (countDisplay) {
+          countDisplay.textContent = visibleCount.toString();
+        }
+      }
+
+      searchInput?.addEventListener('input', filterStudents);
+      classFilter?.addEventListener('change', filterStudents);
+      tagFilter?.addEventListener('change', filterStudents);
+    </script>
   </main>
 </body>
 
@@ -167,6 +237,69 @@ const students = await getStudents();
 
     .student-card h2 {
       font-size: 1rem;
+    }
+  }
+
+  .controls {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 16px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .search-box {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .search-box input {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 2px solid #eee;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+  }
+
+  .search-box input:focus {
+    outline: none;
+    border-color: #667eea;
+  }
+
+  .filter-box {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .filter-box select {
+    padding: 0.8rem 2rem 0.8rem 1rem;
+    border: 2px solid #eee;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    background-color: white;
+    cursor: pointer;
+  }
+
+  .count-display {
+    color: #666;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  @media (max-width: 768px) {
+    .controls {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    
+    .filter-box {
+      flex-direction: column;
     }
   }
 </style>
